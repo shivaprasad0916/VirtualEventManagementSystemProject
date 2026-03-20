@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Events – Upgrad Events</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Upgrad Events</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+    <a href="events.html" class="active">Events</a>
+    <a href="contact.html">Contact Us</a>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>All Events</h1>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="form-card" style="margin-bottom:1.5rem;">
+    <div class="search-bar">
+      <input type="text" id="filterCat" placeholder="Filter by Category…" oninput="renderFiltered()" />
+      <input type="text" id="filterName" placeholder="Filter by Name…" oninput="renderFiltered()" />
+    </div>
+  </div>
+
+  <div class="events-grid" id="grid"></div>
+  <div id="empty" class="empty-state" style="display:none;">
+    <p>No events match your search.</p>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script>
+  seedEvents();
+
+  function renderFiltered() {
+    const cat  = document.getElementById('filterCat').value.trim().toLowerCase();
+    const name = document.getElementById('filterName').value.trim().toLowerCase();
+    const grid  = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    grid.innerHTML = '';
+
+    const filtered = getEvents().filter(ev => {
+      return (!cat  || ev.category.toLowerCase().includes(cat)) &&
+             (!name || ev.name.toLowerCase().includes(name));
+    });
+
+    if (filtered.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    filtered.forEach(ev => {
+      const card = document.createElement('div');
+      card.className = 'event-card';
+      card.innerHTML = `
+        <h3>${ev.name}</h3>
+        <p><strong>Category:</strong> ${ev.category}</p>
+        <p><strong>Date:</strong> ${ev.date}</p>
+        <p><strong>Time:</strong> ${ev.time}</p>
+        <div class="card-actions">
+          <button class="btn btn-blue" onclick="window.location.href='register.html?id=${ev.id}'">Register</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  renderFiltered();
+</script>
+</body>
+</html>

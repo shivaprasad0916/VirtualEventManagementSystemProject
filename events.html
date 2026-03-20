@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Registration – Upgrad Events</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Upgrad Events</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+    <a href="events.html">Events</a>
+    <a href="contact.html">Contact Us</a>
+  </div>
+</nav>
+
+<main>
+  <div class="reg-wrap">
+    <h1>Event Registration</h1>
+
+    <div id="notFound" style="display:none;">
+      <p style="color:var(--red);">Event not found. <a href="index.html">Go back home</a>.</p>
+    </div>
+
+    <div id="regContent" style="display:none;">
+      <!-- Event Details -->
+      <div class="form-card reg-section" id="eventDetails">
+        <h2>Event Details</h2>
+        <p class="detail-row"><strong>ID:</strong> <span id="dId"></span></p>
+        <p class="detail-row"><strong>Name:</strong> <span id="dName"></span></p>
+        <p class="detail-row"><strong>Category:</strong> <span id="dCategory"></span></p>
+        <p class="detail-row"><strong>Date:</strong> <span id="dDate"></span></p>
+        <p class="detail-row"><strong>Time:</strong> <span id="dTime"></span></p>
+      </div>
+
+      <!-- Participant Details -->
+      <div class="form-card reg-section" id="participantSection">
+        <h2>Participant Details</h2>
+        <div class="form-group">
+          <input type="text" id="firstName" placeholder="First Name" />
+        </div>
+        <div class="form-group">
+          <input type="text" id="lastName" placeholder="Last Name" />
+        </div>
+        <div class="form-group">
+          <input type="email" id="email" placeholder="Email Address" />
+        </div>
+        <button class="btn btn-green" style="width:auto;padding:0.6rem 1.5rem;" onclick="registerParticipant()">Register</button>
+      </div>
+
+      <!-- Success Message -->
+      <div id="successMsg" class="form-card" style="display:none; border-left: 4px solid var(--green);">
+        <h2 style="color:var(--green);">✓ Registration Successful!</h2>
+        <p style="margin-top:0.5rem;font-size:0.9rem;color:#374151;">
+          You have been registered for <strong id="successEventName"></strong>.<br/>
+          A confirmation has been recorded. Thank you!
+        </p>
+        <a href="index.html" class="btn btn-blue" style="margin-top:1rem; width:auto; display:inline-block; padding:0.6rem 1.5rem;">Back to Home</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const evId = params.get('id');
+  const ev = evId ? getEventById(evId) : null;
+
+  if (!ev) {
+    document.getElementById('notFound').style.display = 'block';
+  } else {
+    document.getElementById('regContent').style.display = 'block';
+    document.getElementById('dId').textContent = ev.id;
+    document.getElementById('dName').textContent = ev.name;
+    document.getElementById('dCategory').textContent = ev.category;
+    document.getElementById('dDate').textContent = ev.date;
+    document.getElementById('dTime').textContent = ev.time;
+  }
+
+  function registerParticipant() {
+    const first = document.getElementById('firstName').value.trim();
+    const last  = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+
+    if (!first || !last || !email) { showToast('Please fill in all fields.', 'error'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid email.', 'error'); return; }
+
+    saveRegistration({ eventId: ev.id, eventName: ev.name, firstName: first, lastName: last, email, registeredAt: new Date().toISOString() });
+
+    document.getElementById('participantSection').style.display = 'none';
+    document.getElementById('successEventName').textContent = ev.name;
+    document.getElementById('successMsg').style.display = 'block';
+    showToast('Registration successful!', 'success');
+  }
+</script>
+</body>
+</html>

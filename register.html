@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upgrad Events – Home</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Upgrad Events</a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="login.html">Login</a>
+    <a href="events.html">Events</a>
+    <a href="contact.html">Contact Us</a>
+  </div>
+</nav>
+
+<main>
+  <section class="hero">
+    <h1>Welcome to Upgrad Virtual Event Management</h1>
+    <p>Upgrad hosts virtual events in categories like Tech &amp; Innovations and Industrial Events.
+       Join us to explore knowledge, connect with experts, and enhance your professional skills.</p>
+  </section>
+
+  <h2 class="section-title">Upcoming Events</h2>
+  <div class="events-grid" id="eventsGrid">
+    <!-- filled by JS -->
+  </div>
+  <div id="emptyUpcoming" class="empty-state" style="display:none;">
+    <p>No upcoming events at the moment. Check back soon!</p>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script>
+  seedEvents();
+  const grid = document.getElementById('eventsGrid');
+  const empty = document.getElementById('emptyUpcoming');
+  const upcoming = getUpcomingEvents();
+
+  if (upcoming.length === 0) {
+    empty.style.display = 'block';
+  } else {
+    upcoming.forEach(ev => {
+      const card = document.createElement('div');
+      card.className = 'event-card';
+      card.innerHTML = `
+        <h3>${ev.name}</h3>
+        <p><strong>Category:</strong> ${ev.category}</p>
+        <p><strong>Date:</strong> ${ev.date}</p>
+        <p><strong>Time:</strong> ${ev.time}</p>
+        <div class="card-actions">
+          <button class="btn btn-blue" onclick="goRegister(${ev.id})">Register</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function goRegister(id) {
+    window.location.href = `register.html?id=${id}`;
+  }
+</script>
+</body>
+</html>

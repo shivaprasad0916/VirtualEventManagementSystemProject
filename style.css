@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – Upgrad Events</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Upgrad Events</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="login.html" class="active">Login</a>
+    <a href="events.html">Events</a>
+    <a href="contact.html">Contact Us</a>
+  </div>
+</nav>
+
+<main>
+  <div class="login-wrap">
+    <h1>Login</h1>
+    <div class="form-card">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="admin@upgrad.com" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+      </div>
+      <div id="errMsg" style="color:var(--red);font-size:0.85rem;margin-bottom:0.75rem;display:none;">
+        Invalid email or password.
+      </div>
+      <button class="btn btn-blue" onclick="doLogin()">Login</button>
+
+      <p style="margin-top:1rem; font-size:0.8rem; color:var(--gray-text); text-align:center;">
+        Use <strong>admin@upgrad.com</strong> / <strong>admin123</strong>
+      </p>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script>
+  // If already logged in, redirect
+  if (isLoggedIn()) window.location.href = 'manage.html';
+
+  function doLogin() {
+    const email = document.getElementById('email').value.trim();
+    const pwd   = document.getElementById('password').value;
+    const err   = document.getElementById('errMsg');
+
+    if (login(email, pwd)) {
+      showToast('Login successful!', 'success');
+      setTimeout(() => window.location.href = 'manage.html', 800);
+    } else {
+      err.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>

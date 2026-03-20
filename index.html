@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Events – Upgrad Events</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">Upgrad Events</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+    <a href="events.html">Events</a>
+    <a href="contact.html">Contact Us</a>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>Manage Events</h1>
+    <button class="btn-logout" onclick="doLogout()">Logout</button>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:2rem;" class="manage-grid">
+
+    <!-- ADD EVENT FORM -->
+    <div class="form-card">
+      <h2>Add Event</h2>
+      <div class="form-group">
+        <input type="number" id="evId" placeholder="Event ID" min="1" />
+      </div>
+      <div class="form-group">
+        <input type="text" id="evName" placeholder="Event Name" />
+      </div>
+      <div class="form-group">
+        <select id="evCategory">
+          <option value="" disabled selected>Select Category</option>
+          <option value="Tech &amp; Innovations">Tech &amp; Innovations</option>
+          <option value="Industrial Event">Industrial Event</option>
+          <option value="Business Summit">Business Summit</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Education">Education</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <input type="date" id="evDate" />
+      </div>
+      <div class="form-group">
+        <input type="time" id="evTime" />
+      </div>
+      <div class="form-group">
+        <input type="url" id="evUrl" placeholder="Event URL (optional)" />
+      </div>
+      <button class="btn btn-green" style="width:auto;padding:0.6rem 1.5rem;" onclick="addNewEvent()">Add Event</button>
+    </div>
+
+    <!-- SEARCH EVENT -->
+    <div class="form-card">
+      <h2>Search Event</h2>
+      <div class="search-bar" style="margin-bottom:1rem;">
+        <input type="text" id="searchCat" placeholder="Category" />
+        <input type="text" id="searchName" placeholder="Event Name" />
+        <button class="btn btn-blue" style="width:auto;padding:0.6rem 1.25rem;" onclick="doSearch()">Search</button>
+      </div>
+      <div id="searchResults"></div>
+    </div>
+  </div>
+
+  <!-- ALL EVENTS -->
+  <h2 class="section-title" style="text-align:left; margin-top:0;">All Events</h2>
+  <div class="events-grid" id="allEventsGrid"></div>
+  <div id="emptyAll" class="empty-state" style="display:none;">
+    <p>No events yet. Add your first event above.</p>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script>
+  // Guard: must be logged in
+  if (!isLoggedIn()) window.location.href = 'login.html';
+
+  function doLogout() {
+    logout();
+    window.location.href = 'login.html';
+  }
+
+  function renderAllEvents() {
+    const grid = document.getElementById('allEventsGrid');
+    const empty = document.getElementById('emptyAll');
+    const all = getEvents();
+    grid.innerHTML = '';
+
+    if (all.length === 0) { empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    all.forEach(ev => grid.appendChild(makeAdminCard(ev)));
+  }
+
+  function makeAdminCard(ev) {
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.id = `card-${ev.id}`;
+    card.innerHTML = `
+      <h3>${ev.name}</h3>
+      <p><strong>ID:</strong> ${ev.id}</p>
+      <p><strong>Category:</strong> ${ev.category}</p>
+      <p><strong>Date:</strong> ${ev.date}</p>
+      <p><strong>Time:</strong> ${ev.time}</p>
+      <div class="card-actions">
+        <a href="${ev.url || '#'}" target="_blank" class="btn btn-blue">Join Event</a>
+        <button class="btn btn-red" onclick="removeEvent(${ev.id})">Delete</button>
+      </div>
+    `;
+    return card;
+  }
+
+  function addNewEvent() {
+    const id       = parseInt(document.getElementById('evId').value);
+    const name     = document.getElementById('evName').value.trim();
+    const category = document.getElementById('evCategory').value;
+    const date     = document.getElementById('evDate').value;
+    const time     = document.getElementById('evTime').value;
+    const url      = document.getElementById('evUrl').value.trim();
+
+    if (!id || !name || !category || !date || !time) { showToast('Please fill in all required fields.', 'error'); return; }
+
+    // Check duplicate ID
+    if (getEventById(id)) { showToast('An event with this ID already exists.', 'error'); return; }
+
+    addEvent({ id, name, category, date, time, url });
+    showToast('Event added successfully!', 'success');
+
+    // Reset form
+    ['evId','evName','evDate','evTime','evUrl'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('evCategory').selectedIndex = 0;
+
+    renderAllEvents();
+  }
+
+  function removeEvent(id) {
+    if (!confirm('Delete this event?')) return;
+    deleteEvent(id);
+    renderAllEvents();
+    // Clear search results if showing deleted
+    document.getElementById('searchResults').innerHTML = '';
+    showToast('Event deleted.', 'success');
+  }
+
+  function doSearch() {
+    const cat  = document.getElementById('searchCat').value.trim().toLowerCase();
+    const name = document.getElementById('searchName').value.trim().toLowerCase();
+    const results = document.getElementById('searchResults');
+    results.innerHTML = '';
+
+    const filtered = getEvents().filter(ev => {
+      const matchCat  = !cat  || ev.category.toLowerCase().includes(cat);
+      const matchName = !name || ev.name.toLowerCase().includes(name);
+      return matchCat && matchName;
+    });
+
+    if (filtered.length === 0) {
+      results.innerHTML = '<p style="color:var(--gray-text);font-size:0.9rem;">No events found.</p>';
+      return;
+    }
+    filtered.forEach(ev => results.appendChild(makeAdminCard(ev)));
+  }
+
+  // Init
+  renderAllEvents();
+</script>
+</body>
+</html>
